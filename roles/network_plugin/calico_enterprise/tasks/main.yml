@@ -30,6 +30,10 @@
   loop_control:
     label: "{{ item.item.file }}"
 
+- name: Sleep a while to have the operator create the api-groups
+  pause:
+    seconds: 30
+
 - name: Calico Enterprise | Install the Tigera operator configuration.
   kube:
     name: "custom-resources"
@@ -38,6 +42,3 @@
     state: "latest"
   when:
     - inventory_hostname == groups['kube-master'][0]
-  retries: 5
-  delay: 5
-
