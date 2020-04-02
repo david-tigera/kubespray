@@ -1,0 +1,43 @@
+- name: Calico Enterprise | Upload manifests
+  copy:
+    src: "{{ item.file }}"
+    dest: "{{ kube_config_dir }}/{{ item.file }}"
+  with_items:
+    - {name: tigera-operator, file: tigera-operator.yaml}
+    - {name: pull-secret, file: pull-secret.yaml}
+  register: calico_enterprise_manifests
+  when:
+    - inventory_hostname in groups['kube-master']
+
+- name: Calico Enterprise | Upload custom resources manifests
+  copy:
+    src: "custom-resources.yaml"
+    dest: "{{ kube_config_dir }}/custom-resources.yaml"
+  register: calico_custom_resources_manifests
+  when:
+    - inventory_hostname in groups['kube-master']
+
+- name: Calico Enterprise | Install the Tigera operators and pull secret.
+  kube:
+    name: "{{ item.item.name }}"
+    kubectl: "{{ bin_dir }}/kubectl"
+    filename: "{{ kube_config_dir }}/{{ item.item.file }}"
+    state: "latest"
+  with_items:
+    - "{{ calico_enterprise_manifests.results }}"
+  when:
+    - inventory_hostname == groups['kube-master'][0]
+  loop_control:
+    label: "{{ item.item.file }}"
+
+- name: Calico Enterprise | Install the Tigera operator configuration.
+  kube:
+    name: "custom-resources"
+    kubectl: "{{ bin_dir }}/kubectl"
+    filename: "{{ kube_config_dir }}/custom-resources.yaml"
+    state: "latest"
+  when:
+    - inventory_hostname == groups['kube-master'][0]
+  retries: 5
+  delay: 5
+

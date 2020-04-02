@@ -10,6 +10,11 @@ dependencies:
     tags:
       - calico
 
+  - role: network_plugin/calico_enterprise
+    when: kube_network_plugin == 'calico_enterprise'
+    tags:
+      - calico_enterprise
+
   - role: network_plugin/flannel
     when: kube_network_plugin == 'flannel'
     tags:
