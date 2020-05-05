@@ -1,0 +1,2 @@
+- name: Calico Operator | We should install using the operator here
+  debug: msg="Operator yadayada"
